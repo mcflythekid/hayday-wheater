@@ -1,36 +1,86 @@
 #include <ScreenCapture.au3>
 #include <GUIConstantsEx.au3>
 #include <File.au3>
+#include <Array.au3>
 #NoTrayIcon
-
-
 global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
-
 global $storeListingZones, $storeEmptyZones
 global $storeClickZones
 global $chooseWheatZone, $choosePriceZone, $submitSaleZone
 global $generatedZoneFile
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 HotKeySet("^q", "quit")
+HotKeySet("^p", "publishAll")
+HotKeySet("^t", "auditAll")
 HotKeySet("^o", "openGeneratedZone")
 HotKeySet("`", "captureScanZone_register")
 HotKeySet("^`", "captureClickZone_register")
+readConfig()
+;_ArrayDisplay($storeListingZones)
+;_ArrayDisplay($storeEmptyZones)
+;_ArrayDisplay($storeClickZones)
+ConsoleWrite("$chooseWheatZone" & "=" & $chooseWheatZone & @CRLF)
+ConsoleWrite("$choosePriceZone" & "=" & $choosePriceZone & @CRLF)
+ConsoleWrite("$submitSaleZone" & "=" & $submitSaleZone & @CRLF)
 main()
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 func captureClickZone_register()
 	captureClickZone($SQUARE_CLICK, $generatedZoneFile)
 EndFunc
 func captureScanZone_register()
 	captureScanZone($SQUARE_SCAN, $generatedZoneFile)
 EndFunc
-
 func readConfig()
 	_FileReadToArray("storeListingZones.conf", $storeListingZones)
 	_FileReadToArray("storeEmptyZones.conf", $storeEmptyZones)
 	_FileReadToArray("storeClickZones.conf", $storeClickZones)
+	local $ini = "zones.conf"
+	$chooseWheatZone = IniRead($ini, "click", "chooseWheatZone", "")
+	$choosePriceZone = IniRead($ini, "click", "choosePriceZone", "")
+	$submitSaleZone = IniRead($ini, "click", "submitSaleZone", "")
 EndFunc
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+func auditAll()
+	local $size = $storeClickZones[0]
+	for $i = 1 to 3
+		if validate($storeEmptyZones[$i]) Then
+			MsgBox(0, "Deck " & $i, "Empty")
+		ElseIf validate($storeListingZones[$i]) Then
+			MsgBox(0, "Deck " & $i, "Listing")
+		Else ;sold
+			MsgBox(0, "Deck " & $i, "Sold")
+		EndIf
+	Next
+EndFunc
+func publishAll()
+	local $size = $storeClickZones[0]
+	for $i = 1 to $size
+		if validate($storeEmptyZones[$i]) Then
+			publish($i)
+		ElseIf validate($storeListingZones[$i]) Then
+			;do nothing
+			ContinueLoop
+		Else ;sold
+			click($storeClickZones[$i])
+			randomSleep()
+			publish($i)
+		EndIf
+		randomSleep()
+	Next
+EndFunc
+func publish($blockId)
+	click($storeClickZones[$blockId])
+	randomSleep()
+	click($chooseWheatZone)
+	randomSleep()
+	click($choosePriceZone)
+	randomSleep()
+	click($submitSaleZone)
+EndFunc
+func randomSleep()
+	Sleep(Random(300, 600, 1))
+EndFunc
 Func main()
     Local $hGUI = GUICreate("Hayday Wheater")
     Local $idOK = GUICtrlCreateButton("OK", 310, 370, 85, 25)
@@ -49,9 +99,9 @@ func openGeneratedZone()
 	ShellExecute("storeListingZones.conf")
 	ShellExecute("storeEmptyZones.conf")
 	ShellExecute("storeClickZones.conf")
+	ShellExecute("zones.conf")
 	ShellExecute("tmp\generatedZone.txt")
 EndFunc
-
 func captureClickZone($square, $file)
 	local $mouseArray = MouseGetPos()
 	local $x = $mouseArray[0]
@@ -76,22 +126,28 @@ func captureScanZone($square, $file)
 	_ScreenCapture_Capture($imagePath, $left, $top, $right, $bot, False)
 	FileWriteLine($file, $left & "," & $top & "," & $right & "," & $bot & "," & $imagePath)
 EndFunc
-func click($array);[left,top,right,bot]
-	local $x = Random($array[0], $array[2], 1)
-	local $y = Random($array[1], $array[3], 1)
+func click($string);[left,top,right,bot]
+	local $array = StringSplit($string, ",")
+	local $x = Random($array[1], $array[3], 1)
+	local $y = Random($array[2], $array[4], 1)
 	MouseClick("left", $x, $y, 1)
 EndFunc
-func validate($array);[left,top,right,bot,oldImagePath]
+func validate($string);[left,top,right,bot,oldImagePath]
+	local $array = StringSplit($string, ",")
     local $newImagePath = "tmp\current.jpg"
 	local $oldImagePath = $array[5]
-	_ScreenCapture_Capture($newImagePath, $array[0], $array[1], $array[2], $array[3], False)
+	_ScreenCapture_Capture($newImagePath, $array[1], $array[2], $array[3], $array[4], False)
 	local $diff = runJava($newImagePath, $oldImagePath)
+	if $diff == "" Then
+		MsgBox(0, "ERROR", "Cannot compare picture!!!")
+		quit()
+	EndIf
 	return $diff < 1
 EndFunc
 func runJava($imagePath1, $imagePath2)
 	local $filePath = "tmp\stdout.txt"
 	FileDelete($filePath)
-	RunWait(@ComSpec & ' /c ' & 'java -cp . Diff ' & $imagePath1 & ' ' & $imagePath2 & ' > ' & $filePath, Default, @SW_HIDE)
+	RunWait(@ComSpec & ' /c ' & 'java -cp . Diff ' & $imagePath1 & ' ' & $imagePath2 & ' > ' & $filePath, "", @SW_HIDE)
 	return FileRead($filePath)
 EndFunc
 Func newImage()
