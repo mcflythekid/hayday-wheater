@@ -1,8 +1,28 @@
+#include <ButtonConstants.au3>
+#include <EditConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Region ### START Koda GUI section ### Form=c:\users\marty mcfly\desktop\hayday-wheater\wheater.kxf
+$wheaterGui = GUICreate("Wheater", 621, 85, 192, 147, $GUI_SS_DEFAULT_GUI, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
+$tty = GUICtrlCreateEdit("", 168, 8, 449, 73, BitOR($ES_AUTOVSCROLL,$ES_AUTOHSCROLL,$ES_WANTRETURN))
+GUICtrlSetData(-1, "tty")
+GUICtrlSetTip(-1, " ")
+$startBtn = GUICtrlCreateButton("Start", 8, 8, 75, 25)
+$btnStop = GUICtrlCreateButton("Stop", 88, 8, 75, 25)
+GUISetState(@SW_SHOW)
+#EndRegion ### END Koda GUI section ###
+
+
+
 #include <ScreenCapture.au3>
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <Array.au3>
 #include <GUIConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <EditConstants.au3>
+#Include <GUIEdit.au3>
+#Include <ScrollBarConstants.au3>
 #NoTrayIcon
 global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
@@ -12,6 +32,7 @@ global $chooseWheatZone, $choosePriceZone, $chooseAdsZone, $submitSaleZone
 global $chooseSiloZone, $siloIsActiveZone, $wheatIsMaxStockInSoloZone
 global $freeAdsAvailableZone
 global $generatedZoneFile
+global $saling = false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 HotKeySet("^q", "quit")
 HotKeySet("^p", "publishAll")
@@ -58,17 +79,22 @@ func auditAll()
 	local $size = $storeClickZones[0]
 	for $i = 1 to 3
 		if validate($storeEmptyZones[$i]) Then
-			MsgBox(0, "Deck " & $i, "Empty")
+			tty("Deck " & $i & ": Empty")
 		ElseIf validate($storeListingZones[$i]) Then
-			MsgBox(0, "Deck " & $i, "Listing")
+			tty("Deck " & $i & ": Listing")
 		Else ;sold
-			MsgBox(0, "Deck " & $i, "Sold")
+			tty("Deck " & $i & ": Sold")
 		EndIf
 	Next
 EndFunc
 func publishAll()
+	$saling = true
 	local $size = $storeClickZones[0]
 	for $i = 1 to $size
+		if not $saling Then
+			tty("Stop sale")
+			ExitLoop
+		EndIf
 		if validate($storeEmptyZones[$i]) Then
 			publish($i)
 		ElseIf validate($storeListingZones[$i]) Then
@@ -91,8 +117,9 @@ func publish($blockId)
 	EndIf
 
 	if not validate($wheatIsMaxStockInSoloZone) then
-		MsgBox(0, "ERROR", "Please provide more wheat!!!!!!!!!!!")
-		quit()
+		tty("Please provide more wheat!!!!!!!!!!!")
+		$saling = False
+		return
 	EndIf
 
 	click($chooseWheatZone)
@@ -113,16 +140,17 @@ func randomSleep()
 	Sleep(Random(300, 400, 1))
 EndFunc
 Func main()
-    Local $hGUI = GUICreate("Hayday Wheater", 400, 100, -1, -1, $GUI_SS_DEFAULT_GUI, $WS_EX_TOPMOST)
-    Local $idOK = GUICtrlCreateButton("Quit", 10, 10, 85, 25)
-    GUISetState(@SW_SHOW, $hGUI)
 	if not FileExists("tmp\") then DirCreate("tmp")
 	$generatedZoneFile = FileOpen("tmp\generatedZone.txt", 2)
     While 1
         Switch GUIGetMsg()
 			Case $GUI_EVENT_CLOSE, $idOK
-                GUIDelete($hGUI)
+                GUIDelete($wheaterGui)
 				quit()
+			case $startBtn
+				publishAll()
+			case $btnStop
+				$saling = false
         EndSwitch
     WEnd
 EndFunc
@@ -174,6 +202,12 @@ func validate($string);[left,top,right,bot,oldImagePath]
 		quit()
 	EndIf
 	return $diff < 1
+EndFunc
+func tty($msg)
+	local $iEnd = StringLen(GUICtrlRead($tty))
+	_GUICtrlEdit_SetSel($tty, $iEnd, $iEnd)
+	_GUICtrlEdit_Scroll($tty, $SB_SCROLLCARET)
+	GUICtrlSetData($tty, @CRLF & $msg, 1)
 EndFunc
 func runJava($imagePath1, $imagePath2)
 	local $filePath = "tmp\stdout.txt"
