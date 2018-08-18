@@ -2,6 +2,7 @@
 #include <GUIConstantsEx.au3>
 #NoTrayIcon
 
+
 global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
 
@@ -10,8 +11,7 @@ global $storeClickZones
 global $chooseWheatZone, $choosePriceZone, $submitSaleZone
 global $runner = 0
 
-
-
+HotKeySet("^q", "quit")
 main()
 
 Func main()
@@ -32,9 +32,18 @@ func click($array);[left,top,right,bot]
 	local $y = Random($array[1], $array[3], 1)
 	MouseClick("left", $x, $y, 1)
 EndFunc
-func validate($array);[left,top,right,bot,filePath]
-
-
+func validate($array);[left,top,right,bot,oldImagePath]
+    local $newImagePath = "tmp\current.jpg"
+	local $oldImagePath = $array[5]
+	_ScreenCapture_Capture($newImagePath, $array[0], $array[1], $array[2], $array[3], False)
+	local $diff = runJava($newImagePath, $oldImagePath)
+	return $diff < 1
+EndFunc
+func runJava($imagePath1, $imagePath2)
+	local $filePath = "tmp\stdout.txt"
+	FileDelete($filePath)
+	RunWait(@ComSpec & ' /c ' & 'java -cp . Diff ' & $imagePath1 & ' ' & $imagePath2 & ' > ' & $filePath, Default, @SW_HIDE)
+	return FileRead($filePath)
 EndFunc
 Func newImage()
 	local $length = 20
@@ -47,4 +56,7 @@ Func newImage()
         $i += 1
     Until $i = $length
     Return $String
+EndFunc
+func quit()
+	Exit
 EndFunc
