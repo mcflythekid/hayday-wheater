@@ -3,12 +3,10 @@
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
 #Region ### START Koda GUI section ### Form=c:\users\marty mcfly\desktop\hayday-wheater\wheater.kxf
-$wheaterGui = GUICreate("Wheater", 621, 85, 192, 147, $GUI_SS_DEFAULT_GUI, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
-$tty = GUICtrlCreateEdit("", 168, 8, 449, 73, BitOR($ES_AUTOVSCROLL,$ES_AUTOHSCROLL,$ES_WANTRETURN))
+$wheaterGui = GUICreate("Wheater", 621, 85, 325, 648, $GUI_SS_DEFAULT_GUI, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
+$tty = GUICtrlCreateEdit("", 88, 8, 529, 73, BitOR($ES_AUTOVSCROLL,$ES_AUTOHSCROLL,$ES_WANTRETURN))
 GUICtrlSetData(-1, "tty")
-GUICtrlSetTip(-1, " ")
-$startBtn = GUICtrlCreateButton("Start", 8, 8, 75, 25)
-$btnStop = GUICtrlCreateButton("Stop", 88, 8, 75, 25)
+$startBtn = GUICtrlCreateButton("Start", 8, 8, 75, 73)
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
 
@@ -34,7 +32,7 @@ global $freeAdsAvailableZone
 global $generatedZoneFile
 global $saling = false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-HotKeySet("^q", "quit")
+HotKeySet("^q", "stop")
 HotKeySet("^p", "publishAll")
 HotKeySet("^t", "auditAll")
 HotKeySet("^o", "openGeneratedZone")
@@ -89,22 +87,30 @@ func auditAll()
 EndFunc
 func publishAll()
 	$saling = true
-	local $size = $storeClickZones[0]
-	for $i = 1 to $size
-		if not $saling Then
-			tty("Stop sale")
-			ExitLoop
-		EndIf
-		if validate($storeEmptyZones[$i]) Then
-			publish($i)
-		ElseIf validate($storeListingZones[$i]) Then
-			ContinueLoop
-		Else ;sold
-			click($storeClickZones[$i])
-			randomSleep()
-			publish($i)
-		EndIf
-	Next
+	while true
+		local $size = $storeClickZones[0]
+		for $i = 1 to $size
+			if not $saling Then
+				tty("Stop sale")
+				return
+			EndIf
+			if validate($storeEmptyZones[$i]) Then
+				tty("sale slot: " & $i)
+				publish($i)
+			ElseIf validate($storeListingZones[$i]) Then
+				tty("slot is still listing: " & $i)
+				ContinueLoop
+			Else ;sold
+				tty("slot was sold: " & $i)
+				click($storeClickZones[$i])
+				randomSleep()
+				publish($i)
+			EndIf
+		Next
+	WEnd
+EndFunc
+func stop()
+	$saling = false
 EndFunc
 func publish($blockId)
 
@@ -112,6 +118,7 @@ func publish($blockId)
 	randomSleep()
 
 	if not validate($siloIsActiveZone) Then
+		tty("choosing silo")
 		click($chooseSiloZone)
 		randomSleep()
 	EndIf
@@ -129,6 +136,7 @@ func publish($blockId)
 	;randomSleep()
 
 	if validate($freeAdsAvailableZone) Then
+		tty("choose ads")
 		click($chooseAdsZone)
 		randomSleep()
 	EndIf
@@ -149,8 +157,6 @@ Func main()
 				quit()
 			case $startBtn
 				publishAll()
-			case $btnStop
-				$saling = false
         EndSwitch
     WEnd
 EndFunc
