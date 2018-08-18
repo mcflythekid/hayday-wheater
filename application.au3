@@ -1,3 +1,8 @@
+#NoTrayIcon
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Compile_Both=y
+#AutoIt3Wrapper_UseX64=y
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <ButtonConstants.au3>
 #include <EditConstants.au3>
 #include <GUIConstantsEx.au3>
@@ -21,7 +26,6 @@ GUISetState(@SW_SHOW)
 #include <EditConstants.au3>
 #Include <GUIEdit.au3>
 #Include <ScrollBarConstants.au3>
-#NoTrayIcon
 global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
 global $storeListingZones, $storeEmptyZones
@@ -207,6 +211,7 @@ func validate($string);[left,top,right,bot,oldImagePath]
 		MsgBox(0, "ERROR", "Cannot compare picture!!!")
 		quit()
 	EndIf
+	if $diff < 1 Then tty("accept: " & $diff)
 	return $diff < 1
 EndFunc
 func tty($msg)
