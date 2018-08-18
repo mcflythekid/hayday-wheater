@@ -2,6 +2,7 @@
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <Array.au3>
+#include <GUIConstants.au3>
 #NoTrayIcon
 global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
@@ -112,8 +113,8 @@ func randomSleep()
 	Sleep(Random(300, 400, 1))
 EndFunc
 Func main()
-    Local $hGUI = GUICreate("Hayday Wheater")
-    Local $idOK = GUICtrlCreateButton("OK", 310, 370, 85, 25)
+    Local $hGUI = GUICreate("Hayday Wheater", 400, 100, -1, -1, $GUI_SS_DEFAULT_GUI, $WS_EX_TOPMOST)
+    Local $idOK = GUICtrlCreateButton("Quit", 10, 10, 85, 25)
     GUISetState(@SW_SHOW, $hGUI)
 	if not FileExists("tmp\") then DirCreate("tmp")
 	$generatedZoneFile = FileOpen("tmp\generatedZone.txt", 2)
