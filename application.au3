@@ -7,7 +7,8 @@ global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
 global $storeListingZones, $storeEmptyZones
 global $storeClickZones
-global $chooseWheatZone, $choosePriceZone, $submitSaleZone
+global $chooseWheatZone, $choosePriceZone, $chooseAdsZone, $submitSaleZone
+global $freeAdsAvailableZone
 global $generatedZoneFile
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 HotKeySet("^q", "quit")
@@ -20,9 +21,11 @@ readConfig()
 ;_ArrayDisplay($storeListingZones)
 ;_ArrayDisplay($storeEmptyZones)
 ;_ArrayDisplay($storeClickZones)
-ConsoleWrite("$chooseWheatZone" & "=" & $chooseWheatZone & @CRLF)
-ConsoleWrite("$choosePriceZone" & "=" & $choosePriceZone & @CRLF)
-ConsoleWrite("$submitSaleZone" & "=" & $submitSaleZone & @CRLF)
+;ConsoleWrite("$chooseWheatZone" & "=" & $chooseWheatZone & @CRLF)
+;ConsoleWrite("$choosePriceZone" & "=" & $choosePriceZone & @CRLF)
+;ConsoleWrite("$submitSaleZone" & "=" & $submitSaleZone & @CRLF)
+;ConsoleWrite("$chooseAdsZone" & "=" & $chooseAdsZone & @CRLF)
+;ConsoleWrite("$freeAdsAvailableZone" & "=" & $freeAdsAvailableZone & @CRLF)
 main()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 func captureClickZone_register()
@@ -38,7 +41,9 @@ func readConfig()
 	local $ini = "zones.conf"
 	$chooseWheatZone = IniRead($ini, "click", "chooseWheatZone", "")
 	$choosePriceZone = IniRead($ini, "click", "choosePriceZone", "")
+	$chooseAdsZone = IniRead($ini, "click", "chooseAdsZone", "")
 	$submitSaleZone = IniRead($ini, "click", "submitSaleZone", "")
+	$freeAdsAvailableZone = IniRead($ini, "scan", "freeAdsAvailableZone", "")
 EndFunc
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 func auditAll()
@@ -75,6 +80,10 @@ func publish($blockId)
 	click($chooseWheatZone)
 	randomSleep()
 	click($choosePriceZone)
+	if validate($freeAdsAvailableZone) Then
+		randomSleep()
+		click($chooseAdsZone)
+	EndIf
 	randomSleep()
 	click($submitSaleZone)
 EndFunc
