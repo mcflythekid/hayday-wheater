@@ -6,3 +6,7 @@ Hayday Auto Wheat Saler
 
 ** Thanks to 
 * https://rosettacode.org/wiki/Percentage_difference_between_images#Java
+
+#Require#
+* Java
+* Bluestack
