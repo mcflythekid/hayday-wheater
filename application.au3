@@ -8,6 +8,7 @@ global const $SQUARE_SCAN = 5
 global $storeListingZones, $storeEmptyZones
 global $storeClickZones
 global $chooseWheatZone, $choosePriceZone, $chooseAdsZone, $submitSaleZone
+global $chooseSiloZone, $siloIsActiveZone, $wheatIsMaxStockInSoloZone
 global $freeAdsAvailableZone
 global $generatedZoneFile
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -21,11 +22,14 @@ readConfig()
 ;_ArrayDisplay($storeListingZones)
 ;_ArrayDisplay($storeEmptyZones)
 ;_ArrayDisplay($storeClickZones)
-;ConsoleWrite("$chooseWheatZone" & "=" & $chooseWheatZone & @CRLF)
-;ConsoleWrite("$choosePriceZone" & "=" & $choosePriceZone & @CRLF)
-;ConsoleWrite("$submitSaleZone" & "=" & $submitSaleZone & @CRLF)
-;ConsoleWrite("$chooseAdsZone" & "=" & $chooseAdsZone & @CRLF)
-;ConsoleWrite("$freeAdsAvailableZone" & "=" & $freeAdsAvailableZone & @CRLF)
+ConsoleWrite("$chooseWheatZone" & "=" & $chooseWheatZone & @CRLF)
+ConsoleWrite("$choosePriceZone" & "=" & $choosePriceZone & @CRLF)
+ConsoleWrite("$submitSaleZone" & "=" & $submitSaleZone & @CRLF)
+ConsoleWrite("$chooseAdsZone" & "=" & $chooseAdsZone & @CRLF)
+ConsoleWrite("$freeAdsAvailableZone" & "=" & $freeAdsAvailableZone & @CRLF)
+ConsoleWrite("$chooseSiloZone" & "=" & $chooseSiloZone & @CRLF)
+ConsoleWrite("$siloIsActiveZone" & "=" & $siloIsActiveZone & @CRLF)
+ConsoleWrite("$wheatIsMaxStockInSoloZone" & "=" & $wheatIsMaxStockInSoloZone & @CRLF)
 main()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 func captureClickZone_register()
@@ -43,7 +47,10 @@ func readConfig()
 	$choosePriceZone = IniRead($ini, "click", "choosePriceZone", "")
 	$chooseAdsZone = IniRead($ini, "click", "chooseAdsZone", "")
 	$submitSaleZone = IniRead($ini, "click", "submitSaleZone", "")
+	$chooseSiloZone = IniRead($ini, "click", "chooseSiloZone", "")
 	$freeAdsAvailableZone = IniRead($ini, "scan", "freeAdsAvailableZone", "")
+	$siloIsActiveZone = IniRead($ini, "scan", "siloIsActiveZone", "")
+	$wheatIsMaxStockInSoloZone = IniRead($ini, "scan", "wheatIsMaxStockInSoloZone", "")
 EndFunc
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 func auditAll()
@@ -64,31 +71,45 @@ func publishAll()
 		if validate($storeEmptyZones[$i]) Then
 			publish($i)
 		ElseIf validate($storeListingZones[$i]) Then
-			;do nothing
 			ContinueLoop
 		Else ;sold
 			click($storeClickZones[$i])
 			randomSleep()
 			publish($i)
 		EndIf
-		randomSleep()
 	Next
 EndFunc
 func publish($blockId)
+
 	click($storeClickZones[$blockId])
 	randomSleep()
+
+	if not validate($siloIsActiveZone) Then
+		click($chooseSiloZone)
+		randomSleep()
+	EndIf
+
+	if not validate($wheatIsMaxStockInSoloZone) then
+		MsgBox(0, "ERROR", "Please provide more wheat!!!!!!!!!!!")
+		quit()
+	EndIf
+
 	click($chooseWheatZone)
 	randomSleep()
-	click($choosePriceZone)
+
+	;click($choosePriceZone)
+	;randomSleep()
+
 	if validate($freeAdsAvailableZone) Then
-		randomSleep()
 		click($chooseAdsZone)
+		randomSleep()
 	EndIf
-	randomSleep()
+
 	click($submitSaleZone)
+	randomSleep()
 EndFunc
 func randomSleep()
-	Sleep(Random(300, 600, 1))
+	Sleep(Random(300, 400, 1))
 EndFunc
 Func main()
     Local $hGUI = GUICreate("Hayday Wheater")
