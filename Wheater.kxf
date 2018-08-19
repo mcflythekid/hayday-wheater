@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <object type="TAForm" name="wheaterGui">
 	<properties>
-		<property name="Left" vt="Int8">2</property>
-		<property name="Top" vt="Int8">32</property>
+		<property name="Left" vt="Int16">1064</property>
+		<property name="Top" vt="Int16">195</property>
 		<property name="Width" vt="Int16">300</property>
-		<property name="Height" vt="Int16">680</property>
+		<property name="Height" vt="Int16">483</property>
 		<property name="Caption" vt="String">Wheater</property>
 		<property name="Color" vt="Ident">clBtnFace</property>
 		<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
@@ -35,7 +35,7 @@
 				<property name="Left" vt="Int8">8</property>
 				<property name="Top" vt="Int8">48</property>
 				<property name="Width" vt="Int16">270</property>
-				<property name="Height" vt="Int16">585</property>
+				<property name="Height" vt="Int16">377</property>
 				<property name="Lines.Strings" vt="List">
 					<list>
 						<li vt="String">tty</li>
