@@ -277,7 +277,7 @@ func startx()
 	tty("Ok, wait for 1 seconds")
 	Sleep(1000)
 	local $plant_timer;
-	;initScreen()
+	initScreen()
 	if farm_ready_to_plant() then
 		$plant_timer = TimerInit()
 		plantWheat()
@@ -300,7 +300,7 @@ func startx()
 			tty("Wait for wheat growing. Wait time: " & Round($sleep_milis / 1000))
 			Sleep($sleep_milis)
 		EndIf
-		Sleep(3000)
+		Sleep(6000)
 		harvestWheat()
 		$plant_timer = TimerInit()
 		plantWheat()
