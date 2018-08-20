@@ -1,12 +1,10 @@
-#include <ButtonConstants.au3>
 #include <EditConstants.au3>
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
 #Region ### START Koda GUI section ### Form=c:\users\marty mcfly\desktop\hayday-wheater\wheater.kxf
 $wheaterGui = GUICreate("Wheater", 285, 445, 1064, 218, $GUI_SS_DEFAULT_GUI, BitOR($WS_EX_TOPMOST,$WS_EX_WINDOWEDGE))
-$tty = GUICtrlCreateEdit("", 8, 48, 270, 377, BitOR($ES_AUTOVSCROLL,$ES_AUTOHSCROLL,$ES_WANTRETURN))
+$tty = GUICtrlCreateEdit("", 8, 8, 270, 417, BitOR($ES_AUTOVSCROLL,$ES_AUTOHSCROLL,$ES_WANTRETURN))
 GUICtrlSetData(-1, "tty")
-$startBtn = GUICtrlCreateButton("Start", 8, 8, 275, 25)
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
 
@@ -24,6 +22,7 @@ GUISetState(@SW_SHOW)
 global const $SQUARE_CLICK = 20
 global const $SQUARE_SCAN = 5
 global const $INI = "zones.conf"
+global const $TTY_LINE_LIMIT = 100
 global const $FREE_ADS_TIMEOUT_SECONDS = 300
 global const $FREE_ADS_CHECK_TIMEOUT_SECONDS = 60
 global const $WHEAT_TIME_MILISEONDS = 120000
@@ -67,10 +66,10 @@ global $firstLandIsLuoiHaiShownZone=IniRead($INI, "scan", "firstLandIsLuoiHaiSho
 global $generatedZoneFile
 global $saling = false
 global $freeAdsTimer = 0, $freeAdsCheckTimer
+global $ttyLines = 0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 HotKeySet("^q", "quit")
 HotKeySet("^p", "startx")
-HotKeySet("^i", "initScreen")
 HotKeySet("`", "captureScanZone_register")
 HotKeySet("^`", "captureClickZone_register")
 main()
@@ -104,7 +103,7 @@ func publishAll()
 				randomSleep()
 				publish($i)
 			EndIf
-			tty("----------------------------------")
+			tty("")
 		Next
 	WEnd
 EndFunc
@@ -175,8 +174,6 @@ Func main()
 			Case $GUI_EVENT_CLOSE, $idOK
                 GUIDelete($wheaterGui)
 				quit()
-			case $startBtn
-				startx()
         EndSwitch
     WEnd
 EndFunc
@@ -224,9 +221,15 @@ func validate($string);[left,top,right,bot,oldImagePath]
 		quit()
 	EndIf
 	;if $diff < 1 Then tty("accept: " & $diff)
-	return $diff < 1
+	return $diff < 10
 EndFunc
 func tty($msg)
+	$ttyLines += 1
+	if $ttyLines > $TTY_LINE_LIMIT then
+		$ttyLines = 0
+		GUICtrlSetData($tty, "")
+	EndIf
+
 	local $lines = _GUICtrlEdit_GetLineCount($tty)
 	if $lines > 1000 Then
 		GUICtrlSetData($tty, "")
@@ -258,26 +261,13 @@ func quit()
 	FileClose($generatedZoneFile)
 	Exit
 EndFunc
-func initScreen()
-	tty("Prepare screen...")
-	dragY()
-	dragX()
-	MouseClickDrag("left", 150,500,150,350)
-EndFunc
-func dragY()
-	MouseClickDrag("left", 150,150,150,550)
-	MouseClickDrag("left", 150,150,150,550)
-EndFunc
-func dragX()
-	MouseClickDrag("left", 100,200,200,200)
-	MouseClickDrag("left", 100,200,200,200)
-EndFunc
 func startx()
-	MsgBox(0, "Warning", "Please close all dialog, and zoom-out, then press OK")
-	tty("Ok, wait for 1 seconds")
+	GUISetState(@SW_SHOWNOACTIVATE)
+	tty("Prepare screen...")
+	Sleep(1000)
+	send("{up}")
 	Sleep(1000)
 	local $plant_timer;
-	initScreen()
 	if farm_ready_to_plant() then
 		$plant_timer = TimerInit()
 		plantWheat()
@@ -310,6 +300,7 @@ func farm_ready_to_harvest()
 	Sleep(2000)
 	if farm_ready_to_plant() Then return false
 	click($firstLandZone)
+	Sleep(1000)
 	return validate($firstLandIsLuoiHaiShownZone)
 EndFunc
 func farm_ready_to_plant()

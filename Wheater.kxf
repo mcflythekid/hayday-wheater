@@ -33,9 +33,9 @@
 		<object type="TAEdit" name="tty">
 			<properties>
 				<property name="Left" vt="Int8">8</property>
-				<property name="Top" vt="Int8">48</property>
+				<property name="Top" vt="Int8">8</property>
 				<property name="Width" vt="Int16">270</property>
-				<property name="Height" vt="Int16">377</property>
+				<property name="Height" vt="Int16">417</property>
 				<property name="Lines.Strings" vt="List">
 					<list>
 						<li vt="String">tty</li>
@@ -45,21 +45,6 @@
 				<property name="CtrlStyle" vt="Int32">1342378180</property>
 				<property name="CtrlExStyle" vt="Int16">512</property>
 				<property name="Resizing" vt="Set"/>
-			</properties>
-			<components/>
-		</object>
-		<object type="TAButton" name="startBtn">
-			<properties>
-				<property name="Left" vt="Int8">8</property>
-				<property name="Top" vt="Int8">8</property>
-				<property name="Width" vt="Int16">275</property>
-				<property name="Height" vt="Int8">25</property>
-				<property name="Caption" vt="String">Start</property>
-				<property name="TabOrder" vt="Int8">1</property>
-				<property name="Color" vt="Ident">clBtnFace</property>
-				<property name="CtrlStyle" vt="Int32">1342373888</property>
-				<property name="CtrlExStyle" vt="Int8">0</property>
-				<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
 			</properties>
 			<components/>
 		</object>
