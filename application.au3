@@ -70,6 +70,10 @@ global $ttyLines = 0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 HotKeySet("^q", "quit")
 HotKeySet("^p", "startx")
+
+HotKeySet("j", "down")
+HotKeySet("k", "up")
+
 HotKeySet("`", "captureScanZone_register")
 HotKeySet("^`", "captureClickZone_register")
 main()
@@ -223,6 +227,30 @@ func validate($string);[left,top,right,bot,oldImagePath]
 	;if $diff < 1 Then tty("accept: " & $diff)
 	return $diff < 10
 EndFunc
+func validatePrint($string);[left,top,right,bot,oldImagePath]
+	local $array = StringSplit($string, ",")
+    local $newImagePath = "tmp\current.jpg"
+	local $oldImagePath = $array[5]
+	_ScreenCapture_Capture($newImagePath, $array[1], $array[2], $array[3], $array[4], False)
+	local $diff = runJava($newImagePath, $oldImagePath)
+	tty("DIFF=" & $diff)
+EndFunc
+func down()
+	$pos = MouseGetPos()
+	MouseDown("left")
+	MouseMove($pos[0], $pos[1] + 1)
+	MouseUp("left")
+	Sleep(300)
+	validatePrint($firstLandIsBlankZone)
+EndFunc
+func up()
+	$pos = MouseGetPos()
+	MouseDown("left")
+	MouseMove($pos[0], $pos[1] - 1)
+	MouseUp("left")
+	Sleep(300)
+	validatePrint($firstLandIsBlankZone)
+EndFunc
 func tty($msg)
 	$ttyLines += 1
 	if $ttyLines > $TTY_LINE_LIMIT then
@@ -264,9 +292,6 @@ EndFunc
 func startx()
 	GUISetState(@SW_SHOWNOACTIVATE)
 	tty("Prepare screen...")
-	Sleep(1000)
-	send("{up}")
-	Sleep(1000)
 	local $plant_timer;
 	if farm_ready_to_plant() then
 		$plant_timer = TimerInit()
